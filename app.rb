@@ -23,11 +23,11 @@ post '/contacts' do
 
 	@message = "Thank you, #{@mailname}, your message sent successfully"
 
-	f = File.open './public/contacts.txt', 'a'
-	f.write "User: #{@mailname}, Phone: #{@phone}, Date: #{@datetime}\n"
-	f.close
+	#f = File.open './public/contacts.txt', 'a'
+	#f.write "User: #{@mailname}, Phone: #{@phone}, Date: #{@datetime}\n"
+	#f.close
 
-	erb :message
+	erb 'message'
 end
 
 get '/visit' do
@@ -64,17 +64,8 @@ post '/visit' do
 	@db.execute 'insert into Users (username, phone, datestamp, barber, color)
 				values ( ?, ?, ?, ?, ?)', [@username, @phone, @datetime, @barber, @color]
 
-	#@title = 'Thank you!'
-	#@message = "Dear #{@username}, we'll be waiting for you at #{@datetime}. Color: #{@color}"
-	
-
-	# erb 'message'
-	#f = File.open './public/users.txt', 'a'
-	#f.write "User: #{@username}, Phone: #{@phone}, Barber: #{@barber}, Color: #{@color}, Date: #{@datetime}\n"
-	#f.close
-
 	@db.close
-	erb "Thank you, #{@username}, we\'ll be waiting for you at #{@datetime}"
+	erb "Thank you, #{@username}, we\'ll be waiting for you #{@datetime}"
 end
 
 get '/login' do
@@ -93,6 +84,6 @@ post '/login' do
 	end
 end
 
-#def get_db
-#	return SQLite3::Database.new 'barbershop.db'
-#end
+get '/showusers' do
+  erb "Hello World"
+end
