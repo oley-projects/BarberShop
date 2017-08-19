@@ -2,6 +2,7 @@
 require 'rubygems'
 require 'sinatra'
 require 'sinatra/reloader'
+require 'sqlite3'
 
 get '/' do
 	erb "Welcome to Barber Shop!"			
@@ -33,6 +34,16 @@ get '/visit' do
 	erb :visit
 end
 
+configure do
+	db = SQLite3::Database.new 'barbershop.db'
+	db.execute 'CREATE TABLE IF NOT EXISTS "Users" 
+		("id" INTEGER PRIMARY KEY AUTOINCREMENT,
+		 "username" TEXT,
+		 "phone" TEXT,
+		 "datestamp" TEXT,
+		 "color" TEXT )'
+end
+
 post '/visit' do
 	@username = params[:username]
 	@phone = params[:phone]
@@ -49,14 +60,21 @@ post '/visit' do
 		return erb :visit
 	end
 
-	@title = 'Thank you!'
-	@message = "Dear #{@username}, we'll be waiting for you at #{@datetime}. Color: #{@color}"
+	@db = SQLite3::Database.new 'barbershop.db'
+	@db.execute 'insert into Users (username, phone, datestamp, barber, color)
+				values ( ?, ?, ?, ?, ?)', [@username, @phone, @datetime, @barber, @color]
 
-	f = File.open './public/users.txt', 'a'
-	f.write "User: #{@username}, Phone: #{@phone}, Barber: #{@barber}, Color: #{@color}, Date: #{@datetime}\n"
-	f.close
+	#@title = 'Thank you!'
+	#@message = "Dear #{@username}, we'll be waiting for you at #{@datetime}. Color: #{@color}"
+	
 
-	erb :message
+	# erb 'message'
+	#f = File.open './public/users.txt', 'a'
+	#f.write "User: #{@username}, Phone: #{@phone}, Barber: #{@barber}, Color: #{@color}, Date: #{@datetime}\n"
+	#f.close
+
+	@db.close
+	erb "Thank you, #{@username}, we\'ll be waiting for you at #{@datetime}"
 end
 
 get '/login' do
@@ -75,3 +93,6 @@ post '/login' do
 	end
 end
 
+#def get_db
+#	return SQLite3::Database.new 'barbershop.db'
+#end
