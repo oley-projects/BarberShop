@@ -48,6 +48,10 @@ configure do
 		 "phone" TEXT,
 		 "datestamp" TEXT,
 		 "color" TEXT )'
+	@db.execute 'CREATE TABLE IF NOT EXISTS "Barbers"
+		("id" INTEGER PRIMARY KEY AUTOINCREMENT,
+		 "name" TEXT UNIQUE,
+		 "details" TEXT )'
 end
 
 post '/visit' do
@@ -91,7 +95,8 @@ post '/login' do
 end
 
 get '/showusers' do
-	db.execute 'select * from Users' do |row|
+	db = get_db
+	db.execute 'select * from Users order by id desc' do |row|
 		print row['username']
 		print "\t-\t"
 		puts row['datestamp']
