@@ -11,6 +11,18 @@ def get_db
 	db.close
 end
 
+def is_barber_exists? db, name
+	db.execute('select * from Barbers where name =?', [name]).length > 0
+end
+
+def seed_db db, barbers
+	barbers.each do |barber|
+		if !is_barber_exists? db, barber
+			db.execute 'insert into Barbers (name) values (?)', [barber]
+		end
+	end
+end
+
 get '/' do
 	erb "Welcome to Barber Shop!"			
 end
@@ -42,17 +54,19 @@ get '/visit' do
 end
 
 configure do
-	@db = get_db
-	@db.execute 'CREATE TABLE IF NOT EXISTS "Users" 
+	db = get_db
+	db.execute 'CREATE TABLE IF NOT EXISTS "Users" 
 		("id" INTEGER PRIMARY KEY AUTOINCREMENT,
 		 "username" TEXT,
 		 "phone" TEXT,
 		 "datestamp" TEXT,
 		 "color" TEXT )'
-	@db.execute 'CREATE TABLE IF NOT EXISTS "Barbers"
+	db.execute 'CREATE TABLE IF NOT EXISTS "Barbers"
 		("id" INTEGER PRIMARY KEY AUTOINCREMENT,
 		 "name" TEXT UNIQUE,
 		 "details" TEXT )'
+
+	seed_db db, ['Walter White', 'Jessie Pinkman', 'Gus Fring', 'Mike Pington']
 end
 
 post '/visit' do
