@@ -5,7 +5,9 @@ require 'sinatra/reloader'
 require 'sqlite3'
 
 def get_db
-	return SQLite3::Database.new 'barbershop.db'
+	db = SQLite3::Database.new 'barbershop.db'
+	db.results_as_hash = true
+	return db
 end
 
 get '/' do
@@ -39,8 +41,8 @@ get '/visit' do
 end
 
 configure do
-	db = get_db
-	db.execute 'CREATE TABLE IF NOT EXISTS "Users" 
+	@db = get_db
+	@db.execute 'CREATE TABLE IF NOT EXISTS "Users" 
 		("id" INTEGER PRIMARY KEY AUTOINCREMENT,
 		 "username" TEXT,
 		 "phone" TEXT,
@@ -59,16 +61,16 @@ post '/visit' do
 			:phone => 'Введите телефон',
 			:datetime => 'Введите дату и время' }
 
-	@error = hh.select {|key,_| params[key] == ""}.values.join(", ")
+	@error = hh.select {|key,_| params[key] == ""}.values.join(". ")
 	if @error != ''
 		return erb :visit
+	
 	end
 
-	@db = get_db
-	@db.execute 'insert into Users (username, phone, datestamp, barber, color)
+	db.execute 'insert into Users (username, phone, datestamp, barber, color)
 				values ( ?, ?, ?, ?, ?)', [@username, @phone, @datetime, @barber, @color]
 
-	@db.close
+	db.close
 	erb "Thank you, #{@username}, we\'ll be waiting for you #{@datetime}"
 end
 
@@ -89,5 +91,11 @@ post '/login' do
 end
 
 get '/showusers' do
-  erb "Hello World"
+	db.execute 'select * from Users' do |row|
+		print row['username']
+		print "\t-\t"
+		puts row['datestamp']
+		puts '---------------------------------'
+	end
+	erb :showusers
 end
