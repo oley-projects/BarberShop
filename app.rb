@@ -8,6 +8,7 @@ def get_db
 	db = SQLite3::Database.new 'barbershop.db'
 	db.results_as_hash = true
 	return db
+	db.close
 end
 
 get '/' do
@@ -68,13 +69,10 @@ post '/visit' do
 	@error = hh.select {|key,_| params[key] == ""}.values.join(". ")
 	if @error != ''
 		return erb :visit
-	
 	end
 
 	db.execute 'insert into Users (username, phone, datestamp, barber, color)
 				values ( ?, ?, ?, ?, ?)', [@username, @phone, @datetime, @barber, @color]
-
-	db.close
 	erb "Thank you, #{@username}, we\'ll be waiting for you #{@datetime}"
 end
 
@@ -85,8 +83,6 @@ end
 post '/login' do
 	@login = params[:login]
 	@password = params[:password]
-
-
 	if @login == 'admin' && @password == 'secret'
 		erb :admin
 	else
@@ -96,11 +92,6 @@ end
 
 get '/showusers' do
 	db = get_db
-	db.execute 'select * from Users order by id desc' do |row|
-		print row['username']
-		print "\t-\t"
-		puts row['datestamp']
-		puts '---------------------------------'
-	end
+	@res = db.execute 'select * from Users order by id desc' 
 	erb :showusers
 end
