@@ -23,6 +23,27 @@ def seed_db db, barbers
 	end
 end
 
+before do
+	db = get_db
+	@barbers = db.execute 'select * from Barbers'
+end
+
+configure do
+	db = get_db
+	db.execute 'CREATE TABLE IF NOT EXISTS "Users" 
+		("id" INTEGER PRIMARY KEY AUTOINCREMENT,
+		 "username" TEXT,
+		 "phone" TEXT,
+		 "datestamp" TEXT,
+		 "color" TEXT )'
+	db.execute 'CREATE TABLE IF NOT EXISTS "Barbers"
+		("id" INTEGER PRIMARY KEY AUTOINCREMENT,
+		 "name" TEXT UNIQUE,
+		 "details" TEXT )'
+
+	seed_db db, ['Walter White', 'Jessie Pinkman', 'Gus Fring', 'Mike Pington']
+end
+
 get '/' do
 	erb "Welcome to Barber Shop!"			
 end
@@ -53,22 +74,6 @@ get '/visit' do
 	erb :visit
 end
 
-configure do
-	db = get_db
-	db.execute 'CREATE TABLE IF NOT EXISTS "Users" 
-		("id" INTEGER PRIMARY KEY AUTOINCREMENT,
-		 "username" TEXT,
-		 "phone" TEXT,
-		 "datestamp" TEXT,
-		 "color" TEXT )'
-	db.execute 'CREATE TABLE IF NOT EXISTS "Barbers"
-		("id" INTEGER PRIMARY KEY AUTOINCREMENT,
-		 "name" TEXT UNIQUE,
-		 "details" TEXT )'
-
-	seed_db db, ['Walter White', 'Jessie Pinkman', 'Gus Fring', 'Mike Pington']
-end
-
 post '/visit' do
 	@username = params[:username]
 	@phone = params[:phone]
@@ -85,6 +90,7 @@ post '/visit' do
 		return erb :visit
 	end
 
+	db = get_db
 	db.execute 'insert into Users (username, phone, datestamp, barber, color)
 				values ( ?, ?, ?, ?, ?)', [@username, @phone, @datetime, @barber, @color]
 	erb "Thank you, #{@username}, we\'ll be waiting for you #{@datetime}"
